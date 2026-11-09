@@ -75,7 +75,7 @@ Open each page; expected result: the warning page.
 | `test-pages/mal-anchor-click.html` | Launched through a script-clicked `<a>`. |
 | `test-pages/mal-no-traps.html` | No trapping code at all, but a blatant lock screen that opened itself. |
 
-### M-07: Already on the page when the extension is installed (R-07 "installed", R-04, AC-12)
+### M-07: Already on the page when the extension is installed or re-enabled (R-07 "installed", R-04, AC-12)
 1. On `chrome://extensions`, **Remove** the extension.
 2. Open <http://127.0.0.1:8080/benign.html>, click **View Generated Report**, and leave the report tab open.
 3. In another tab, open <http://127.0.0.1:8080/malicious.html>. Observe that right-click does nothing and F5 does nothing. **Click on the page** (this allows a "Leave site?" prompt).
@@ -86,7 +86,13 @@ Expected:
 - Within 1 to 2 s of installing (3 s at most), the lock-screen tab shows the warning page, with no "Leave site?" dialog.
 - The benign report tab is unchanged.
 
-*Note (known gap, see README):* toggling a disabled extension back on does not fire `onInstalled`, so a tab trapped while the extension was disabled is not rescued. This scenario uses *Remove* followed by *Load unpacked*, which counts as an install.
+Then repeat with the on/off switch:
+
+6. On `chrome://extensions`, switch the extension off.
+7. Open <http://127.0.0.1:8080/malicious.html> in a new tab and click the page.
+8. Switch the extension back on, then go back to the lock-screen tab.
+
+Expected: the lock-screen tab shows the warning page within about 1 s of switching the extension on. Chrome does not fire `onInstalled` on enable; the start-up sweep handles it.
 
 ---
 

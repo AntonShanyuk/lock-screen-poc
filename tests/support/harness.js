@@ -6,15 +6,17 @@ const puppeteer = require('puppeteer');
 const { start } = require('./server');
 
 const EXT_PATH = path.resolve(__dirname, '..', '..', 'extension');
+const TOGGLE_HELPER_PATH = path.resolve(__dirname, 'toggle-helper');
 const WARNING_PATH = '/pages/blocked.html';
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-async function launch({ withExtension = true } = {}) {
+/** extraExtensions: paths of additional unpacked extensions (e.g. the toggle helper). */
+async function launch({ withExtension = true, extraExtensions = [] } = {}) {
   const { server, origin } = await start();
   const browser = await puppeteer.launch({
     headless: true,
     pipe: true, // required for installExtension()
-    enableExtensions: withExtension ? [EXT_PATH] : true,
+    enableExtensions: withExtension || extraExtensions.length ? [...(withExtension ? [EXT_PATH] : []), ...extraExtensions] : true,
     args: ['--window-size=1280,800'],
   });
   const ctx = {
@@ -107,4 +109,4 @@ async function windowState(page) {
   }
 }
 
-module.exports = { EXT_PATH, launch, track, isWarning, waitFor, waitForWarning, newPageFromClick, warningDetails, windowState, sleep };
+module.exports = { EXT_PATH, TOGGLE_HELPER_PATH, launch, track, isWarning, waitFor, waitForWarning, newPageFromClick, warningDetails, windowState, sleep };

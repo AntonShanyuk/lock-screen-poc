@@ -4,7 +4,7 @@ A Chrome (Manifest V3) extension that detects fake "your computer has been locke
 
 - **Load it:** open `chrome://extensions`, turn on *Developer mode*, click *Load unpacked* and select the `extension/` folder.
 - **Try it:** `npm run serve`, then open <http://127.0.0.1:8080/test-pages/> (an index of every malicious and benign scenario). Serve over HTTP: when pages are opened from `file://`, their blob URLs get an opaque `blob:null` origin.
-- **Test it:** `npm install`, then `npm test` (60 unit tests, under 0.1 s) and `npm run test:e2e` (29 tests in real Chromium with the extension loaded, about 80 s). Measured: blocked a median of **19 ms** after the blob page commits, and rescued about **105 ms** after install.
+- **Test it:** `npm install`, then `npm test` (60 unit tests, under 0.1 s) and `npm run test:e2e` (31 tests in real Chromium with the extension loaded, about 80 s). Measured: blocked a median of **19 ms** after the blob page commits, and rescued about **105 ms** after install or re-enable.
 - **Written note:** [`NOTE.md`](NOTE.md).
 - **Acceptance:** criteria were pre-registered in [`ACCEPTANCE_CRITERIA.md`](ACCEPTANCE_CRITERIA.md), with results at the bottom. Manual steps are in [`MANUAL_TEST_SCENARIOS.md`](MANUAL_TEST_SCENARIOS.md).
 
@@ -42,7 +42,6 @@ The decision lives in one pure, unit-tested function. It blocks when **content o
 - Non-English lock screens. The vocabulary is English-only.
 - Scams that are not top-level `blob:` documents: full-viewport `data:`/`srcdoc`/blob iframes or overlays on ordinary `https:` pages.
 - A page that deliberately defeats the instrumentation, for example by taking pristine functions from a fresh iframe, ignoring untrusted events (`isTrusted`), or delaying its traps and content past the user's patience. The isolated-world observers (real cancelled escape attempts, `fullscreenchange`) are harder to dodge than the page-world hooks.
-- Re-enabling a *disabled* extension does not fire `runtime.onInstalled`, so a tab trapped while the extension was off is not swept. Installing and updating are covered.
 
 ---
 
@@ -61,7 +60,7 @@ The decision lives in one pure, unit-tested function. It blocks when **content o
 │        ▲ DOM events ▼                        │probe / │     navigate to warning     │
 │ ISOLATED world  content/isolated.js          │ block  │     page, or replace the    │
 │  • visible-text snapshot, late-content       │        │     tab if it is stuck      │
-│    MutationObserver                          │        │  • onInstalled: sweep       │
+│    MutationObserver                          │        │  • on start-up: sweep       │
 │  • real cancelled escapes, fullscreenchange  │        │    already-open tabs        │
 └──────────────────────────────────────────────┘        └─────────────────────────────┘
 ```
@@ -75,7 +74,7 @@ The decision lives in one pure, unit-tested function. It blocks when **content o
   - It switches the page-world sensor into *defanged* mode: `beforeunload` is suppressed, `navigator.keyboard.lock()` becomes a no-op, and full screen is still allowed for legitimate slides and kiosks.
   - Reports from allowed origins are not blocked and never probed, except when a dialog loop has frozen the page.
   - The tab reopens the launcher page (taken from `navigation.activation.from`, same origin only), or the blob URL if the launcher is still open in another tab.
-- **Already on the page at install.** `runtime.onInstalled` sweeps open tabs. A tiny injected check skips tabs that are not `blob:` and tabs that are already instrumented; the rest get both scripts. Listener registrations made before injection can't be seen, but the probes find the trapping behaviour anyway.
+- **Already on the page when the extension starts.** Whenever the service worker starts, it sweeps open tabs once per extension instance: after install, update or reload, and after a re-enable, which does not fire `runtime.onInstalled`. A flag in `chrome.storage.session`, which Chrome clears on disable, reload, update and browser restart, stops later wake-ups from sweeping again. A tiny injected check skips tabs that are not `blob:` and tabs that are already instrumented; the rest get both scripts. Listener registrations made before injection can't be seen, but the probes find the trapping behaviour anyway.
 - **Hardening.** The isolated script merges page-world signals monotonically, so a page that forges the internal event can only *add* evidence. The single-instance guard lives in the isolated world, where the page can't reach it. The warning page renders page-derived text with `textContent` only.
 
 ## Further trapping layers (implemented)
@@ -110,6 +109,7 @@ A throwaway extension was run in Chrome for Testing 156 (Puppeteer) to settle be
 | Back after leaving | `chrome-error`: the blob URL dies with the launcher document. |
 | Can a stuck `alert()` loop be escaped? | A navigation never commits, but `tabs.remove` works (38 ms). That led to the tab-replacement fallback. |
 | Blob tab URLs without the `tabs` permission? | Not readable, so the install sweep asks each tab instead. |
+| Does re-enabling a disabled extension fire `runtime.onInstalled`? | No, but Chrome does start the service worker, so the sweep runs from start-up code. |
 
 Two points on which published sources disagree were checked against primary sources: the Keyboard Lock permission prompt was cancelled, and full screen delivers browser shortcuts to the page.
 
@@ -120,7 +120,7 @@ Two points on which published sources disagree were checked against primary sour
 | `tests/unit/detector.test.js` | Content scoring on the real sample text and variants: wording, vendor, missing phone number, obfuscation. Phone-number false positives (hex codes, dates, IDs). Trap scoring and thresholds. Arrival. Decision boundaries, including false-positive and false-negative edge cases. URL helpers, and the override's origin pattern and reopen-target validation. |
 | `tests/unit/gate.test.js` | Runs both content scripts in a VM where every browser API access is recorded. Zero access on non-blob pages and blob sub-frames, with a blob positive control. |
 | `tests/unit/manifest.test.js` | MV3 shape, minimal permissions, referenced files exist, no network APIs, `eval` or remote URLs, no `innerHTML` on the warning page. |
-| `tests/e2e/*.test.js` | Real Chromium plus the unpacked extension: every malicious and benign page, timings (within 2 s), dialogs, muting, Back, warning page buttons, install-while-trapped, full screen and Keyboard Lock, history flood, alert loops at human and machine speed, native functions intact on http pages, no network requests. |
+| `tests/e2e/*.test.js` | Real Chromium plus the unpacked extension: every malicious and benign page, timings (within 2 s), dialogs, muting, Back, warning page buttons, install or re-enable while trapped (including a background tab), full screen and Keyboard Lock, history flood, alert loops at human and machine speed, native functions intact on http pages, no network requests. |
 | `tests/e2e/override.test.js` | *Reopen* flow: launcher reloaded, page shown and defanged (no "Leave site?" after interaction), session-only exact-origin registration, other origins still blocked, dialog loops still rescued, new-tab pattern reopens the blob. |
 
 ## Project layout

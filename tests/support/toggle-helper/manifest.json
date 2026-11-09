@@ -1,0 +1,8 @@
+{
+  "manifest_version": 3,
+  "name": "Test helper: toggle extensions",
+  "version": "1.0.0",
+  "description": "Used only by the e2e tests to disable and re-enable the extension under test.",
+  "permissions": ["management"],
+  "background": { "service_worker": "bg.js" }
+}

@@ -93,6 +93,7 @@ The criteria text above was not edited after registration. These notes record wh
   - AC-19 needed **no new permission**: the session allow-list is a runtime-registered content script, not `chrome.storage`. AC-02 holds unchanged.
 - **A-5 (AC-16, AC-18): where the note lives.** The written note and the short answer on related techniques were moved out of the README into their own document, `NOTE.md`, which the README links to. Each is a few sentences, as the requirement asks. The README keeps the longer list under *Further techniques*.
 - **A-6 (all): editorial pass.** On 2026-11-09 every document went through a de-AI style check. Typography (dashes, arrows, comparison signs), some wording and the reopen button's label ("I trust this site. Reopen the page") changed. No criterion changed in meaning.
+- **A-7 (AC-02, AC-12): re-enable covered.** Re-enabling a disabled extension does not fire `runtime.onInstalled`, so a tab trapped while the extension was off was not rescued (the gap noted in A-2). The sweep now runs whenever the service worker starts, once per extension instance, gated by a flag in `chrome.storage.session`. That adds the `storage` permission, which shows no install warning. AC-02 still holds, since the extension requests only what it uses.
 - **A-3 (AC-14): "keyboard no longer locked".** Verified indirectly. The locking document is replaced, which releases Keyboard Lock. The e2e test checks the window state and `document.fullscreenElement`; manual scenario M-10 checks that Ctrl/Cmd+L reaches the browser.
 
 ## Criteria added later (registered before their implementation)
@@ -112,12 +113,12 @@ The criteria text above was not edited after registration. These notes record wh
 
 ## Verification results (2026-11-09)
 
-Environment: macOS, Node 20.20.2, Chrome for Testing 156.0.8078.47 (Puppeteer 25.16.0). `npm test`: **60/60 unit tests pass**. `npm run test:e2e`: **29/29 e2e tests pass**, including the AC-19 suite (3 consecutive full runs after it was added). One full e2e run had a single intermittent failure in the "alert loop, instant dismissal" test. Its cause was not identified; the test was then hardened (it ignores leftover warning tabs and prints diagnostics). Since that failure, the test passed in 17 further runs (4 alone, 13 with its file) and in 9 consecutive full e2e runs. The last 2 of those used the final 24-test suite.
+Environment: macOS, Node 20.20.2, Chrome for Testing 156.0.8078.47 (Puppeteer 25.16.0). `npm test`: **60/60 unit tests pass**. `npm run test:e2e`: **31/31 e2e tests pass**, including the AC-19 suite and the re-enable test (A-7). One full e2e run had a single intermittent failure in the "alert loop, instant dismissal" test. Its cause was not identified; the test was then hardened (it ignores leftover warning tabs and prints diagnostics). Since that failure, the test passed in 17 further runs (4 alone, 13 with its file) and in 9 consecutive full e2e runs. The last 2 of those used the final 24-test suite.
 
 | AC | Status | Evidence |
 |---|---|---|
 | AC-01 | Met | e2e `platform`: MV3 worker starts, no console errors/warnings · unit `manifest` · M-01 |
-| AC-02 | Met | unit `manifest`: no network/eval/remote URLs in the code · e2e `platform`: no requests from the worker or caused in pages · M-02 |
+| AC-02 | Met | unit `manifest`: no network/eval/remote URLs in the code · e2e `platform`: no requests from the worker or caused in pages · permissions are `scripting`, `storage` (session flag, A-7) and `webNavigation` · M-02 |
 | AC-03 | Met | e2e `malicious` AC-03/AC-09. Measured from blob commit to warning page: **median 19 ms, max 48 ms** (10 runs; budget 2 s) |
 | AC-04 | Met | unit: Apple, Defender, browser-locked and obfuscated variants · e2e: `mal-apple-no-phone` (no phone, legacy keyCode trapping) |
 | AC-05 | Met | e2e `mal-delayed`: not blocked while only the placeholder shows; blocked within 2 s after the lock screen appears |
@@ -127,7 +128,7 @@ Environment: macOS, Node 20.20.2, Chrome for Testing 156.0.8078.47 (Puppeteer 25
 | AC-09 | Met | e2e: warning page shows the generating origin and at least 4 reasons, including the phone number and blocked keys |
 | AC-10 | Met | e2e `benign.html`: report stays on its blob URL for 5 s, content intact, no dialogs, no muting, no block |
 | AC-11 | Met | e2e: same-tab preview, editor (its own "Leave site?" still works), receipt with support number, security report, scam-awareness handout, full-screen slideshow, PDF and PNG previews. All untouched for 5 s |
-| AC-12 | Met for install (A-2) | e2e install test: rescued **~105 ms** after install (3 runs; budget 3 s), no dialog despite prior user activation, open benign report untouched |
+| AC-12 | Met for install and re-enable (A-2, A-7) | e2e: rescued **~105 ms** after install (3 runs; budget 3 s), no dialog despite prior user activation, open benign report untouched · install while the lock screen is in a background tab · re-enable after a disable: rescued in about 100 ms, swept once per extension instance |
 | AC-13 | Met | unit `gate` (VM): zero browser-API access on non-blob pages and blob sub-frames · e2e: native functions intact on http pages, zero reports from them · the worker's `webNavigation` listeners are URL-filtered to `blob:` (code review; M-13 checks the worker stays inactive) |
 | AC-14 | Met (A-3) | e2e `mal-fullscreen-keylock`: not blocked before trapping, blocked on the full-screen request, window not left in full screen |
 | AC-15 | Met | unit: dialog/history/pointer-lock/pop-up thresholds · e2e: history flood (verdict names `history-flood`); alert loop at human speed (at most 2 dialogs) and at machine speed (stuck tab replaced) |

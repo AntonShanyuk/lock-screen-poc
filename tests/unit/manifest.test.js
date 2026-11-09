@@ -30,7 +30,7 @@ test('manifest: content scripts run at document_start, top frame only, inside bl
 });
 
 test('manifest: minimal permissions (AC-02)', () => {
-  assert.deepEqual([...manifest.permissions].sort(), ['scripting', 'webNavigation']);
+  assert.deepEqual([...manifest.permissions].sort(), ['scripting', 'storage', 'webNavigation'], 'storage: session-only sweep flag, no install warning');
   assert.deepEqual(manifest.host_permissions, ['<all_urls>']);
   assert.equal(manifest.content_security_policy, undefined, 'default (strict) CSP');
   assert.equal(manifest.externally_connectable, undefined);

@@ -257,8 +257,32 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   }
 });
 
-// --- install / update: rescue tabs that are already open -------------------------
-chrome.runtime.onInstalled.addListener(async () => {
+// --- rescue tabs that were already open when this extension instance started --
+// Covers install, update/reload AND re-enabling after a disable. Chrome fires
+// runtime.onInstalled only for the first two, but it always starts the service
+// worker, so the sweep runs from top-level code. chrome.storage.session is
+// cleared whenever the extension is disabled, reloaded or updated (and on browser
+// restart), so the "swept" flag means "already swept for this instance": later
+// wake-ups (blob navigations, messages) do not sweep again.
+let sweeping = null;
+function sweepOnce() {
+  if (!sweeping) {
+    sweeping = (async () => {
+      try {
+        const { swept } = await chrome.storage.session.get('swept');
+        if (swept) return;
+        await chrome.storage.session.set({ swept: true });
+      } catch (_) {
+        /* storage unavailable: sweep anyway */
+      }
+      stats.sweeps = (stats.sweeps || 0) + 1;
+      await sweepOpenTabs();
+    })();
+  }
+  return sweeping;
+}
+
+async function sweepOpenTabs() {
   let tabs = [];
   try {
     tabs = await chrome.tabs.query({});
@@ -285,4 +309,7 @@ chrome.runtime.onInstalled.addListener(async () => {
       }
     }),
   );
-});
+}
+
+chrome.runtime.onInstalled.addListener(() => sweepOnce());
+sweepOnce();
