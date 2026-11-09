@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<!--
+  BENIGN variants (AC-11): classic "in-browser file preview" uses of blob URLs —
+  a generated PDF and a generated PNG opened in a new tab.
+  Expected: untouched.
+-->
+<html lang="en">
+<head><meta charset="utf-8" /><title>File previews</title>
+<style>body { font-family: Arial, sans-serif; margin: 40px; } button { padding: 8px 16px; font-size: 14px; margin-right: 8px; }</style>
+</head>
+<body>
+  <h1>File previews</h1>
+  <button id="pdf">Preview PDF invoice</button>
+  <button id="png">Preview chart image</button>
+<script>
+  function makePdf(text) {
+    // Minimal single-page PDF with correct xref offsets.
+    const objs = [
+      '<< /Type /Catalog /Pages 2 0 R >>',
+      '<< /Type /Pages /Kids [3 0 R] /Count 1 >>',
+      '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>',
+      null,
+      '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>',
+    ];
+    const stream = `BT /F1 24 Tf 72 700 Td (${text}) Tj ET`;
+    objs[3] = `<< /Length ${stream.length} >>\nstream\n${stream}\nendstream`;
+    let out = '%PDF-1.4\n';
+    const offsets = [];
+    objs.forEach((o, i) => { offsets.push(out.length); out += `${i + 1} 0 obj\n${o}\nendobj\n`; });
+    const xref = out.length;
+    out += `xref\n0 ${objs.length + 1}\n0000000000 65535 f \n`;
+    offsets.forEach((o) => { out += `${String(o).padStart(10, '0')} 00000 n \n`; });
+    out += `trailer\n<< /Size ${objs.length + 1} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF`;
+    return new Blob([out], { type: 'application/pdf' });
+  }
+  document.getElementById('pdf').addEventListener('click', () => {
+    window.open(URL.createObjectURL(makePdf('Invoice #1042 - Total $240.00')), '_blank');
+  });
+  document.getElementById('png').addEventListener('click', () => {
+    const c = document.createElement('canvas');
+    c.width = 400; c.height = 240;
+    const g = c.getContext('2d');
+    g.fillStyle = '#fff'; g.fillRect(0, 0, 400, 240);
+    [60, 120, 90, 160, 200].forEach((h, i) => { g.fillStyle = '#1a56db'; g.fillRect(30 + i * 70, 220 - h, 40, h); });
+    const tab = window.open('', '_blank');
+    c.toBlob((blob) => { tab.location.href = URL.createObjectURL(blob); }, 'image/png');
+  });
+</script>
+</body>
+</html>

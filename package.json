@@ -1,0 +1,15 @@
+{
+  "name": "blob-lockscreen-guard",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Chrome MV3 extension that detects and breaks out of blob:-delivered fake lock-screen (tech-support scam) pages.",
+  "scripts": {
+    "test": "node --test tests/unit/",
+    "test:e2e": "node --test --test-concurrency=1 tests/e2e/",
+    "test:all": "npm test && npm run test:e2e",
+    "serve": "node tests/support/server.js"
+  },
+  "devDependencies": {
+    "puppeteer": "^25.16.0"
+  }
+}

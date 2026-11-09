@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Lock-screen guard test pages</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { font: 15px/1.5 system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 32px auto; max-width: 900px; padding: 0 16px; }
+  h1 { font-size: 22px; }
+  h2 { font-size: 17px; margin-top: 28px; }
+  table { border-collapse: collapse; width: 100%; }
+  th, td { text-align: left; vertical-align: top; padding: 8px; border-bottom: 1px solid #8884; }
+  td:first-child { white-space: nowrap; }
+  .bad { color: #c62828; font-weight: 600; }
+  .good { color: #2e7d32; font-weight: 600; }
+  code { font-size: 13px; }
+</style>
+</head>
+<body>
+  <h1>Lock-screen guard — test pages</h1>
+  <p>Open each page in a normal tab with the extension loaded. Scenario IDs match <code>MANUAL_TEST_SCENARIOS.md</code>.
+     Pages must be served over HTTP (<code>npm run serve</code>); opening them from <code>file://</code> produces opaque <code>blob:null</code> URLs.</p>
+
+  <h2>Malicious — expected: <span class="bad">tab is replaced by the warning page</span></h2>
+  <table>
+    <tr><th>Page</th><th>What it does</th></tr>
+    <tr><td><a href="../malicious.html">malicious.html</a></td><td>Reference attack sample: self-opening blob lock screen, blocks right-click/keys, beforeunload.</td></tr>
+    <tr><td><a href="mal-apple-no-phone.html">mal-apple-no-phone</a></td><td>Apple-themed, no phone number, legacy <code>onkeydown</code>/<code>keyCode</code> trapping.</td></tr>
+    <tr><td><a href="mal-delayed.html">mal-delayed</a></td><td>Neutral placeholder for 2 s, then the lock screen. Click it during the first 2 s to test the "Leave site?" disarm.</td></tr>
+    <tr><td><a href="mal-new-tab-click.html">mal-new-tab-click</a></td><td>Copies the benign arrival: click → <code>window.open(blob)</code> in a new tab.</td></tr>
+    <tr><td><a href="mal-anchor-click.html">mal-anchor-click</a></td><td>Launches via a script-clicked <code>&lt;a&gt;</code>.</td></tr>
+    <tr><td><a href="mal-no-traps.html">mal-no-traps</a></td><td>Blatant lock screen with no trapping code, self-opened.</td></tr>
+    <tr><td><a href="mal-fullscreen-keylock.html">mal-fullscreen-keylock</a></td><td><b>Bonus layer.</b> Click "Open player", then click the lock screen: it requests full screen + Keyboard Lock.</td></tr>
+    <tr><td><a href="mal-history-flood.html">mal-history-flood</a></td><td><b>Bonus layer.</b> Click "Continue": floods history to break Back.</td></tr>
+    <tr><td><a href="mal-alert-loop.html">mal-alert-loop</a></td><td><b>Bonus layer.</b> Click "Continue": endless <code>alert()</code> loop. Dismiss the first dialog.</td></tr>
+  </table>
+
+  <h2>Benign — expected: <span class="good">page works normally, nothing happens</span></h2>
+  <table>
+    <tr><th>Page</th><th>What it does</th></tr>
+    <tr><td><a href="../benign.html">benign.html</a></td><td>Reference legitimate sample: report opened in a new tab via a blob URL.</td></tr>
+    <tr><td><a href="ben-same-tab-preview.html">ben-same-tab-preview</a></td><td>Report opened in the <i>same</i> tab via <code>location.href = blob</code>.</td></tr>
+    <tr><td><a href="ben-editor.html">ben-editor</a></td><td>Blob editor with a beforeunload prompt, Ctrl+S and Esc handling.</td></tr>
+    <tr><td><a href="ben-support-receipt.html">ben-support-receipt</a></td><td>Receipt naming Microsoft with a toll-free support number.</td></tr>
+    <tr><td><a href="ben-security-report.html">ben-security-report</a></td><td>IT security report full of scary words (malware, error code, phone).</td></tr>
+    <tr><td><a href="ben-scam-awareness.html">ben-scam-awareness</a></td><td>Training handout that quotes a scam lock screen verbatim.</td></tr>
+    <tr><td><a href="ben-slideshow.html">ben-slideshow</a></td><td>Blob slideshow that goes full screen and handles Esc/arrows.</td></tr>
+    <tr><td><a href="ben-file-previews.html">ben-file-previews</a></td><td>PDF and PNG blob previews.</td></tr>
+  </table>
+</body>
+</html>

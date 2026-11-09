@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<!--
+  MALICIOUS variant, BONUS trapping layer (AC-15): after showing the lock screen,
+  the page traps the user in an endless alert() loop, which blocks the page's own
+  JavaScript (including the extension's content script in that page). The service
+  worker must still navigate the tab away.
+  Expected: blocked; the dialog disappears with the page.
+-->
+<html lang="en">
+<head><meta charset="utf-8" /><title>Loading…</title></head>
+<body>
+<script>
+  const html = `<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>Security Alert</title>
+<style>body { margin:0; height:100vh; display:grid; place-items:center; background:#002bff; color:#fff; font-family:Arial, sans-serif; text-align:center; }</style>
+</head><body>
+  <div>
+    <h1>Your computer has been blocked</h1>
+    <p>Spyware detected. Call Microsoft Support: <b>1-800-555-0144</b></p>
+  </div>
+  <script>
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        for (;;) alert('WARNING! Your computer has been blocked. Call Microsoft Support at 1-800-555-0144');
+      }, 300);
+    });
+  <\/script>
+</body></html>`;
+  // Opened with a click so the "self-opened" rule does not fire first:
+  // the dialog loop is what must be detected.
+  document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('go').addEventListener('click', () => {
+      location.href = URL.createObjectURL(new Blob([html], { type: 'text/html' }));
+    });
+  });
+</script>
+<h1>Account check</h1>
+<button id="go" style="padding:10px 18px;font-size:16px">Continue</button>
+</body>
+</html>

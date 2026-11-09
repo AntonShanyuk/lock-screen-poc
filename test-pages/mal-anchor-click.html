@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<!--
+  MALICIOUS variant (AC-06): launches the blob through a script-clicked <a> element
+  (a pattern seen in blob-URL phishing kits) and revokes the URL afterwards, so the
+  arrival is not a plain location.href redirect.
+  Expected: blocked.
+-->
+<html lang="en">
+<head><meta charset="utf-8" /><title>Redirecting…</title></head>
+<body>
+<script>
+  const html = `<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>Critical Security Alert</title>
+<style>
+  body { margin:0; height:100vh; display:grid; place-items:center; background:#b00020; color:#fff;
+         font-family:Arial, sans-serif; text-align:center; }
+</style></head>
+<body>
+  <div>
+    <h1>Error # 268D3: your browser has been locked</h1>
+    <p>Malware infection detected. Your personal information is at risk.</p>
+    <p>Call the Help Desk immediately: <b>1-888-555-0161</b></p>
+  </div>
+  <script>
+    document.addEventListener('contextmenu', (e) => e.preventDefault());
+    window.addEventListener('keydown', (e) => { if (e.key === 'Escape' || e.key === 'F5' || e.key === 'F12') e.preventDefault(); });
+    window.addEventListener('beforeunload', (e) => { e.preventDefault(); e.returnValue = ''; });
+  <\/script>
+</body></html>`;
+  const url = URL.createObjectURL(new Blob([html], { type: 'text/html' }));
+  const a = document.createElement('a');
+  a.href = url;
+  document.body.appendChild(a);
+  a.click();
+</script>
+</body>
+</html>

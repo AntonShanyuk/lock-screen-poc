@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<!--
+  MALICIOUS variant (AC-05, AC-07): the blob page first shows a neutral "Loading"
+  placeholder (so an initial scan sees nothing) and swaps in the lock screen after
+  2 s. Traps are registered immediately. Click the placeholder before 2 s to give
+  the page "sticky activation": a beforeunload prompt would then be allowed, so this
+  also checks that the extension disarms it before navigating.
+  Expected: blocked ~2 s after load, with no "Leave site?" dialog.
+-->
+<html lang="en">
+<head><meta charset="utf-8" /><title>Loading video…</title></head>
+<body>
+<script>
+  const html = `<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>Loading…</title>
+<style>
+  body { margin:0; height:100vh; display:grid; place-items:center; font-family:Segoe UI, Arial, sans-serif; }
+  .lock { background:#0078d7; color:#fff; position:fixed; inset:0; display:grid; place-items:center; text-align:center; }
+  .num { font-size:30px; font-weight:bold; }
+</style></head>
+<body>
+  <div id="root"><p id="placeholder">Loading your content… click anywhere if it does not start.</p></div>
+  <script>
+    window.addEventListener('beforeunload', (e) => { e.preventDefault(); e.returnValue = ''; });
+    document.addEventListener('keydown', (e) => {
+      if (['Escape', 'F5', 'F11'].includes(e.key) || ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'r')) e.preventDefault();
+    });
+    setTimeout(() => {
+      document.title = 'Windows Defender Security Center';
+      document.getElementById('root').innerHTML =
+        '<div class="lock"><div>' +
+        '<h1>Windows Defender Security Center</h1>' +
+        '<p>Access to this PC has been blocked for security reasons. Trojan spyware detected.</p>' +
+        '<p>Call Windows Support:</p><p class="num">+1 (844) 555-0142</p>' +
+        '</div></div>';
+    }, 2000);
+  <\/script>
+</body></html>`;
+  location.href = URL.createObjectURL(new Blob([html], { type: 'text/html' }));
+</script>
+</body>
+</html>

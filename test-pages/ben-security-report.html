@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<!--
+  BENIGN variant (adversarial false-positive check): an IT dashboard that generates
+  a weekly SECURITY report and shows it in the same tab. Lots of scary vocabulary
+  (malware, suspicious activity, Microsoft Defender, error code, phone number) but
+  no lock-screen claim and no trapping.
+  Expected: untouched.
+-->
+<html lang="en">
+<head><meta charset="utf-8" /><title>IT dashboard</title>
+<style>body { font-family: Arial, sans-serif; margin: 40px; } button { padding: 8px 16px; font-size: 14px; }</style>
+</head>
+<body>
+  <h1>IT dashboard</h1>
+  <button id="report">Generate weekly security report</button>
+<script>
+  document.getElementById('report').addEventListener('click', () => {
+    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Weekly security report</title></head>
+      <body style="font-family:Arial, sans-serif; margin:40px">
+        <h1>Weekly security report</h1>
+        <ul>
+          <li>Microsoft Defender quarantined 2 malware detections (both on test VMs).</li>
+          <li>Suspicious activity: 1 unusual login from a new country, verified by the user.</li>
+          <li>1 laptop failed to update with error code 0x80070005 (access denied).</li>
+        </ul>
+        <p>Questions? Contact the IT help desk at +1 (415) 555-0134.</p>
+      </body></html>`;
+    location.href = URL.createObjectURL(new Blob([html], { type: 'text/html' }));
+  });
+</script>
+</body>
+</html>

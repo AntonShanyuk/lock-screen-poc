@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<!--
+  BENIGN variant (AC-11): a generated receipt that legitimately names a vendor
+  and shows a toll-free support phone number, but does not trap the user.
+  Content looks partly "scammy" (enough to trigger the probes), traps are absent.
+  Expected: untouched.
+-->
+<html lang="en">
+<head><meta charset="utf-8" /><title>Your orders</title>
+<style>body { font-family: Arial, sans-serif; margin: 40px; } button { padding: 8px 16px; font-size: 14px; }</style>
+</head>
+<body>
+  <h1>Your orders</h1>
+  <button id="receipt">View receipt</button>
+<script>
+  document.getElementById('receipt').addEventListener('click', () => {
+    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Receipt #A-20931</title></head>
+      <body style="font-family:Arial, sans-serif; margin:40px">
+        <h1>Receipt #A-20931</h1>
+        <p>Microsoft 365 Family — 12-month subscription — $99.99</p>
+        <p>Paid with Visa ending 4242 on ${new Date().toDateString()}.</p>
+        <p>Questions about your order? Call our support team toll-free at 1-800-555-0123, Monday to Friday.</p>
+      </body></html>`;
+    window.open(URL.createObjectURL(new Blob([html], { type: 'text/html' })), '_blank');
+  });
+</script>
+</body>
+</html>

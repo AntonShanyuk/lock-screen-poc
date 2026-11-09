@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<!--
+  BENIGN variant (adversarial false-positive check for the content-only rule): a
+  security-awareness training handout generated client-side and opened in the same
+  tab after a click. It QUOTES a scam lock screen verbatim — lock wording, phone
+  number, "call Microsoft support" — but it was opened by the user and does not trap.
+  Expected: untouched.
+-->
+<html lang="en">
+<head><meta charset="utf-8" /><title>Security awareness training</title>
+<style>body { font-family: Arial, sans-serif; margin: 40px; } button { padding: 8px 16px; font-size: 14px; }</style>
+</head>
+<body>
+  <h1>Security awareness training</h1>
+  <button id="handout">Open module 3 handout</button>
+<script>
+  document.getElementById('handout').addEventListener('click', () => {
+    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Module 3: Tech support scams</title></head>
+      <body style="font-family:Arial, sans-serif; margin:40px; max-width:720px">
+        <h1>Module 3: How to recognise a fake lock screen</h1>
+        <p>Scam pages often display messages such as "Your computer has been locked" or
+           "Do not restart your computer", claim a virus infection has put your passwords at risk,
+           and tell you to "Call Microsoft Support immediately at 1-800-555-0199".</p>
+        <p>They may show fake error codes such as 0x800704cf. Microsoft never asks you to call a number
+           shown in a browser window. Close the tab and, if needed, restart the browser.</p>
+      </body></html>`;
+    location.href = URL.createObjectURL(new Blob([html], { type: 'text/html' }));
+  });
+</script>
+</body>
+</html>

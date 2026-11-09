@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<!--
+  MALICIOUS variant, BONUS trapping layer (AC-14): the lock screen goes full screen
+  and calls navigator.keyboard.lock() on the user's first click. (It only reacts to
+  mouse clicks: a variant that also reacts to key presses is caught even earlier,
+  because the extension's escape-key probe makes it reveal the full-screen call.) In
+  full screen Chrome delivers Ctrl+W/Ctrl+T etc. to the page, and Keyboard Lock
+  turns Esc into "press and hold". It re-enters full screen whenever it is left.
+  It has no other trapping code, and it is opened by a user click (so it does not
+  look self-opened): only the full-screen/keyboard-lock layer gives it away.
+  Expected: blocked as soon as it requests full screen; window not left in full screen.
+-->
+<html lang="en">
+<head><meta charset="utf-8" /><title>Video player</title>
+<style>body { font-family: Arial, sans-serif; margin: 40px; } button { padding: 10px 18px; font-size: 16px; }</style>
+</head>
+<body>
+  <h1>Video player</h1>
+  <button id="open">▶ Open player</button>
+<script>
+  const html = `<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>Microsoft Windows Security</title>
+<style>
+  html, body { margin:0; height:100%; }
+  body { display:grid; place-items:center; background:#0a1a8c; color:#fff; font-family:Segoe UI, Arial, sans-serif; text-align:center; cursor:pointer; }
+  .phone { font-size:34px; font-weight:bold; color:#ffe14d; }
+</style></head>
+<body id="body">
+  <div>
+    <h1>Your computer has been locked</h1>
+    <p>Windows detected a ransomware infection. Your files and passwords are at risk.</p>
+    <p>Call Microsoft Support immediately: <span class="phone">1-844-555-0187</span></p>
+    <p><small>Error code 0x80073b01. Click anywhere to continue.</small></p>
+  </div>
+  <script>
+    async function trap() {
+      try {
+        await document.documentElement.requestFullscreen({ navigationUI: 'hide' });
+        if (navigator.keyboard && navigator.keyboard.lock) await navigator.keyboard.lock();
+      } catch (e) { /* needs a user gesture; retried on next click */ }
+    }
+    document.addEventListener('click', trap);
+  <\/script>
+</body></html>`;
+  document.getElementById('open').addEventListener('click', () => {
+    location.href = URL.createObjectURL(new Blob([html], { type: 'text/html' }));
+  });
+</script>
+</body>
+</html>

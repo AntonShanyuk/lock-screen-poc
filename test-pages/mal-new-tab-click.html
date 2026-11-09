@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<!--
+  MALICIOUS variant (AC-06): copies the BENIGN arrival pattern — the lock screen is
+  opened with window.open() into a new tab after a real user click — so "how it
+  arrived" looks innocent. Content + trapping must still get it blocked.
+  Expected: the new tab is blocked.
+-->
+<html lang="en">
+<head><meta charset="utf-8" /><title>Free movie stream</title>
+<style>body { font-family: Arial, sans-serif; margin: 40px; } button { padding: 10px 18px; font-size: 16px; }</style>
+</head>
+<body>
+  <h1>Your video is ready</h1>
+  <button id="play">▶ Play video</button>
+<script>
+  const html = `<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>Windows Firewall Warning</title>
+<style>
+  body { margin:0; height:100vh; display:grid; place-items:center; background:#002bff; color:#fff;
+         font-family:Arial, sans-serif; text-align:center; }
+  .phone { font-size:32px; font-weight:bold; color:#ffdd00; }
+</style></head>
+<body>
+  <div>
+    <h1>Windows Firewall: your computer is locked</h1>
+    <p>Pornographic spyware and a Zeus virus were detected. Your passwords and banking details may be stolen.</p>
+    <p>Call Microsoft technicians toll-free now:</p>
+    <div class="phone">888-555-0175</div>
+  </div>
+  <script>
+    document.addEventListener('contextmenu', (e) => e.preventDefault());
+    document.addEventListener('keydown', (e) => {
+      if (['Escape', 'F11', 'F12', 'F5'].includes(e.key) || (e.ctrlKey && 'rlw'.includes(e.key.toLowerCase()))) e.preventDefault();
+    });
+  <\/script>
+</body></html>`;
+  document.getElementById('play').addEventListener('click', () => {
+    window.open(URL.createObjectURL(new Blob([html], { type: 'text/html' })), '_blank');
+  });
+</script>
+</body>
+</html>

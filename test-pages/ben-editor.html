@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<!--
+  BENIGN variant (AC-11): a blob-hosted editor that legitimately uses "trap-like"
+  APIs — a beforeunload "unsaved changes" prompt, Ctrl/Cmd+S intercepted to save,
+  Esc intercepted to close its help panel.
+  Expected: untouched.
+-->
+<html lang="en">
+<head><meta charset="utf-8" /><title>Notes</title>
+<style>body { font-family: Arial, sans-serif; margin: 40px; } button { padding: 8px 16px; font-size: 14px; }</style>
+</head>
+<body>
+  <h1>Notes</h1>
+  <button id="open">Open scratchpad editor</button>
+<script>
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Scratchpad</title>
+<style>body { font-family: Arial, sans-serif; margin: 32px; } #pad { min-height: 200px; border: 1px solid #ccc; padding: 12px; } #help { background:#eef; padding:8px; }</style>
+</head><body>
+  <h1>Scratchpad</h1>
+  <p id="help">Tip: press Ctrl+S to save a copy. Press Esc to hide this tip.</p>
+  <div id="pad" contenteditable="true">Meeting notes: agree on Q4 roadmap, assign owners, review budget.</div>
+  <p id="status"></p>
+  <script>
+    let dirty = true;
+    document.getElementById('pad').addEventListener('input', () => { dirty = true; document.getElementById('status').textContent = ''; });
+    window.addEventListener('beforeunload', (e) => { if (dirty) { e.preventDefault(); e.returnValue = ''; } });
+    document.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+        e.preventDefault();
+        dirty = false;
+        document.getElementById('status').textContent = 'Saved.';
+      }
+      if (e.key === 'Escape') { e.preventDefault(); document.getElementById('help').hidden = true; }
+    });
+  <\/script>
+</body></html>`;
+  document.getElementById('open').addEventListener('click', () => {
+    window.open(URL.createObjectURL(new Blob([html], { type: 'text/html' })), '_blank');
+  });
+</script>
+</body>
+</html>

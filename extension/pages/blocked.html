@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Scam page blocked</title>
+<link rel="icon" href="../icons/icon32.png" />
+<link rel="stylesheet" href="blocked.css" />
+</head>
+<body>
+  <main class="card" aria-labelledby="heading">
+    <img class="badge" src="../icons/icon128.png" alt="" width="56" height="56" />
+    <h1 id="heading">Your computer is not locked</h1>
+    <p class="lead">
+      We closed a fake “your computer has been locked” page. It was generated inside your browser by
+      <strong id="origin">an unknown site</strong> and pretended to be a security warning so you would call a fake
+      support number.
+    </p>
+    <p class="advice"><strong>Don’t call any number the page showed</strong>, and don’t give anyone remote access to your computer.</p>
+
+    <section aria-labelledby="why-heading">
+      <h2 id="why-heading">Why it was blocked</h2>
+      <ul id="reasons"></ul>
+    </section>
+
+    <div class="actions">
+      <button id="new-tab" class="primary" type="button">Open a new tab</button>
+      <button id="close-tab" type="button">Close this tab</button>
+    </div>
+
+    <details id="override" hidden>
+      <summary>Details</summary>
+      <p>
+        Scam pages often tell you to ignore warnings like this one. Only continue if you are sure this is a page you
+        trust, such as an internal tool you use every day, and nobody told you to do this.
+      </p>
+      <p>
+        If you continue, <strong id="override-origin">this site</strong> is allowed until you close the browser. It
+        still won’t be able to lock your keyboard, stop you from leaving, or trap you in pop-up loops.
+      </p>
+      <button id="reopen" class="link-danger" type="button">I trust this site. Reopen the page (not recommended)</button>
+      <p id="reopen-error" class="error" role="alert" hidden></p>
+    </details>
+
+    <p class="footnote">Detection runs entirely in your browser. Nothing was sent anywhere.</p>
+  </main>
+  <script src="blocked.js"></script>
+</body>
+</html>
