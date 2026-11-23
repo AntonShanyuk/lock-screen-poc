@@ -4,7 +4,7 @@ These scenarios together cover every requirement (R-01 to R-11), both bonus item
 
 ## Setup
 
-1. **Browser.** Desktop Google Chrome (or Chromium/Edge) 119 or later. Results were verified on Chrome for Testing 156.
+1. **Browser.** Desktop Google Chrome (or Chromium/Edge) 119 or later. Use 123 or later for `mal-no-traps` in M-06 and for M-15, which rely on `navigation.activation`. Results were verified on Chrome for Testing 156.
 2. **Serve the pages** from the project root with `npm run serve`, which serves at `http://127.0.0.1:8080`. Alternatively, run `python3 -m http.server 8080 --bind 127.0.0.1`.
    *Do not open the pages from `file://`: blob URLs then get an opaque `blob:null` origin, which is out of scope.*
 3. **Load the extension:** open `chrome://extensions`, turn on *Developer mode*, click *Load unpacked* and select `extension/`.
@@ -22,7 +22,7 @@ These scenarios together cover every requirement (R-01 to R-11), both bonus item
 Expected:
 - The card shows "Lock-Screen Scam Guard 1.0.0" with no *Errors* button.
 - The service worker console is empty.
-- `extension/manifest.json` requests only `scripting`, `webNavigation` and host access `<all_urls>`. Chrome's *Details* page shows the matching warnings: site access to all sites, and browsing-history access from `webNavigation`.
+- `extension/manifest.json` requests only `scripting`, `storage`, `webNavigation` and host access `<all_urls>`. Chrome's *Details* page shows the matching warnings: site access to all sites, and browsing-history access from `webNavigation`. `scripting` and `storage` add no warning.
 
 ### M-02: No network traffic (R-09, AC-02)
 1. Keep the service worker DevTools from M-01 open on the **Network** tab.

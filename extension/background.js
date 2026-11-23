@@ -6,7 +6,8 @@
  *  - Content scripts in blob: documents send reports; the detector scores them.
  *  - On a "block" verdict: the page disarms itself, the tab is muted and
  *    navigated to the extension's warning page.
- *  - On install/update, tabs that are already open are swept, so a user who is
+ *  - Whenever the worker starts (install, update, reload or re-enable), tabs that
+ *    are already open are swept once per extension instance, so a user who is
  *    already stuck on a lock screen is rescued too.
  */
 'use strict';
